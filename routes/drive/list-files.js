@@ -19,15 +19,18 @@ router.get("/", async (req, res) => {
   try {
     const drive = google.drive({ version: "v3", auth });
 
+    // Folder ID: Pliki do Audytu SEO
+    const folderId = "1wDS9DQGWqZWNq7KndVG_jOjjBhjcjVZG";
+
     const response = await drive.files.list({
-      q: "'1wDS9DQGWqZWNq7KndVG_jOjjBhjcjVZG' in parents",
+      q: `'${folderId}' in parents and trashed = false`,
       fields: "files(id, name, mimeType, size, createdTime, webViewLink)",
     });
 
     res.json(response.data.files);
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Error fetching files from Google Drive.");
+    console.error("Google Drive API error:", error.message);
+    res.status(500).json({ error: "Failed to retrieve files from Google Drive." });
   }
 });
 
