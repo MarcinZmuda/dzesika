@@ -1,31 +1,24 @@
 // routes/drive/list-files.js
 const express = require("express");
+const router = express.Router();
 const { google } = require("googleapis");
 
-const router = express.Router();
+// Zakładamy, że masz autoryzację zrobioną wcześniej
+const auth = /* twoja konfiguracja autoryzacji z refresh_token itd. */;
 
 router.get("/", async (req, res) => {
   try {
-    const auth = new google.auth.OAuth2(
-      process.env.GOOGLE_CLIENT_ID,
-      process.env.GOOGLE_CLIENT_SECRET,
-      process.env.GOOGLE_REDIRECT_URI
-    );
-
-    auth.setCredentials({
-      refresh_token: process.env.GOOGLE_REFRESH_TOKEN
-    });
-
     const drive = google.drive({ version: "v3", auth });
 
     const response = await drive.files.list({
-      q: `'1wDS9DQGWqZWNq7KndVG_jOjjBhjcjVZG' in parents`,
-      fields: "files(id, name, mimeType)"
+      q: "'1wDS9DQGWqZWNq7KndVG_jOjjBhjcjVZG' in parents",
+      fields: "files(id, name, mimeType, size, createdTime, webViewLink)",
     });
 
-    res.status(200).json(response.data.files);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.json(response.data.files);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Błąd podczas pobierania plików z Google Drive.");
   }
 });
 
